@@ -1,9 +1,16 @@
+
+'use client';
 import Image from "next/image";
 import styles from "./page.module.css";
+import React, { useEffect, useState } from "react";
+import { fetchWeatherApi } from "openmeteo";
+import WeatherComponent from "./Components/WeatherComponent";
+
 
 export default function Home() {
   return (
     <div className={styles.page}>
+      <WeatherComponent />
       <main className={styles.main}>
         <Image
           className={styles.logo}
