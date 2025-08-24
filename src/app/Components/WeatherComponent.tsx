@@ -11,6 +11,8 @@ interface WeatherData {
   longitude: number;
   elevation: number;
   timezone: string;
+  sunrise: string;
+  sunset: string;
 }
 
 const WeatherComponent: React.FC = () => {
@@ -48,13 +50,15 @@ const WeatherComponent: React.FC = () => {
         const sunrise = daily.variables(0)!;
         const sunset = daily.variables(1)!;
 
-        const weather = {
+        const weather: WeatherData = {
           hourly,
           daily,
           latitude,
           longitude,
           elevation,
-          timezone
+          timezone,
+          sunrise,
+          sunset,
         };
 
         setWeatherData(weather);
@@ -78,6 +82,7 @@ const WeatherComponent: React.FC = () => {
       <p>Longitude: {weatherData.longitude}</p>
       <p>Elevation: {weatherData.elevation}</p>
       <p>Timezone: {weatherData.timezone}</p>
+
       {/* You can add more detailed hourly/daily rendering here */}
     </div>
   );
