@@ -1,91 +1,51 @@
-// src/components/WeatherComponent.tsx
+// components/BerlinWeather.tsx
 'use client';
 
-import React, { useEffect, useState } from "react";
-import { fetchWeatherApi } from "openmeteo";
+import { useEffect, useState } from 'react';
 
 interface WeatherData {
-  hourly: any,
-  daily: any;
-  latitude: number;
-  longitude: number;
-  elevation: number;
-  timezone: string;
-  sunrise: string;
-  sunset: string;
+  temperature: number;
+  windSpeed: number;
 }
 
-const WeatherComponent: React.FC = () => {
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+const BerlinWeather = () => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const params = {
-        latitude: 52.5244,
-        longitude: 13.4105,
-        daily: ["sunrise", "sunset"],
-        hourly: [
-          "temperature_2m", "relative_humidity_2m", "rain", "snowfall", "showers",
-          "wind_speed_10m","wind_speed_80m","wind_speed_120m","wind_speed_180m",
-          "wind_direction_10m","wind_direction_80m","wind_direction_120m","wind_direction_180m"
-        ],
-        timezone: "Europe/Berlin",
-        past_days: 3,
-      };
-      const url = "https://api.open-meteo.com/v1/forecast";
-
+    const fetchWeather = async () => {
       try {
-        const responses = await fetchWeatherApi(url, params);
-        const response = responses[0];
-
-        const latitude = response.latitude();
-        const longitude = response.longitude();
-        const elevation = response.elevation();
-        const timezone = response.timezone();
-
-        const hourly = response.hourly()!;
-        const daily = response.daily()!;
-
-        const sunrise = daily.variables(0)!;
-        const sunset = daily.variables(1)!;
-
-        const weather: WeatherData = {
-          hourly,
-          daily,
-          latitude,
-          longitude,
-          elevation,
-          timezone,
-          sunrise,
-          sunset,
-        };
-
-        setWeatherData(weather);
-      } catch (error) {
-        console.error("Weather fetch failed:", error);
+        const res = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m'
+        );
+        if (!res.ok) throw new Error('Failed to fetch weather data');
+        const data = await res.json();
+        setWeather({
+          temperature: data.current.temperature_2m,
+          windSpeed: data.current.wind_speed_10m,
+        });
+      } catch (err: any) {
+        setError(err.message || 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchWeather();
   }, []);
 
   if (loading) return <p>Loading weather...</p>;
-  if (!weatherData) return <p>No weather data</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!weather) return <p>No weather data available.</p>;
 
   return (
-    <div>
-      <h2>Weather Info</h2>
-      <p>Latitude: {weatherData.latitude}</p>
-      <p>Longitude: {weatherData.longitude}</p>
-      <p>Elevation: {weatherData.elevation}</p>
-      <p>Timezone: {weatherData.timezone}</p>
-
-      {/* You can add more detailed hourly/daily rendering here */}
+    <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '300px' }}>
+      <h2>Berlin Weather</h2>
+      <p><strong>Temperature:</strong> {weather.temperature} °C</p>
+      <p><strong>Wind Speed:</strong> {weather.windSpeed} m/s</p>
     </div>
   );
 };
 
-export default WeatherComponent;
+export default BerlinWeather;
